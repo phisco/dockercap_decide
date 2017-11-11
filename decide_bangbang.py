@@ -4,44 +4,56 @@ import logging
 
 
 class Decide(Thread):
-    def __init__(self, inQueue, outQueue, func, params):
+    def __init__(self, inQueue, outQueue, func, params, tolerance):
+        super(Decide, self).__init__()
         # params will be a namedtuple
         self.params, self.func = params, func
         self.inQueue = inQueue  # type: q.Queue
         self.outQueue = outQueue  # type: q.Queue
-        self.stopped = False
-        self.previousChoice = 0
+        self.__stopped = False
+        self.previousChoice = 100
         self.previousStatus = 0
+        self.tolerance = tolerance
 
     def stop(self):
-        self.stop = True
+        self.__stopped=True;
 
     def run(self):
         super().run()
         logging.info("Set params {}".format(self.params))
-        while True:
+        while not self.__stopped:
             try:
-                status = self.inQueue.get()
-                choice = self.func(status, self.previousStatus, self.previousChoice)
+                status = self.inQueue.get(timeout=5)
+                choice = self.func(status, self.previousChoice, self.previousStatus)
                 self.previousStatus, self.previousChoice = status, choice
-                logging.info('Received: {}, decide: {}'.format(status, choice))
+
+                logging.info('Received: {}, decided: {}'.format(status, choice))
+
                 self.outQueue.put(choice)
-            except KeyboardInterrupt:
+            except q.Empty:
                 break
 
-
 class BangBang(Decide):
+
     def evaluate(self, latency, previousChoice, previousStatus):
         if latency >= self.max:
-            return 100  # if system's latency greater than max allowed, give all the power
-        elif latency >= self.min:
-            return previousChoice  # if latency in allowed range, then continue like this
+            logging.info('over MAX')
+            choice=100  # if system's latency greater than max allowed, give all the power
+        elif self.max*(1-self.tolerance) <= latency < self.max:
+            logging.info('near MAX latency, trying giving {}'.format(self.substep))
+            choice=previousChoice+self.substep  # if latency near max try giving some more power
+        elif self.min*(1+self.tolerance) <= latency < self.max*(1-self.tolerance):
+            logging.info('trying to reduce power by substep {}'.format(self.substep))
+            choice = previousChoice - self.substep  # if latency between toleranche from min  max, try powercapping
         else:  # if system's latency lower than lower bound try reducing the power step by step if possible
+            logging.info('trying to reduce power by step {}'.format(self.step))
             choice = previousChoice - self.step
-            return choice if choice >= self.step else self.step
+        return choice if 100 >= choice >= self.step else 100 if choice >= 100 else self.step
 
-    def __init__(self, inQueue, outQueue, params):
-        super().__init__(inQueue, outQueue, self.evaluate, params)
+    def __init__(self, inQueue, outQueue, params, tolerance):
+        super().__init__(inQueue, outQueue, self.evaluate, params, tolerance)
         self.max = params.max
         self.min = params.min
         self.step = params.step
+        self.substep = params.substep
+
