@@ -1,57 +1,59 @@
 from threading import Thread
-
 import time
-
 import decide_bangbang as d
 import queue as q
 from collections import namedtuple
 import logging
 import random
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO,format='%(threadName)s : %(message)s')
 
-class TestBench(Thread):
-    def __init__(self, timeout, mulstep):
-        super().__init__()
-        inQueue.put(50)
-        self.stopped=False
-        self.timeout = timeout
-        self.mulstep = mulstep
+class BangBangRandomTest(d.Decide):
+    def decide(self, out):
+        return out + random.randint(-1*self.mulstep*self.step
+                             if out - self.mulstep*self.step >= 0
+                             else 0,
+                             2*self.mulstep*self.step
+                             if out + 2*self.mulstep*self.step
+                             else 150-out)
 
-    def stop(self):
-        self.stopped=True
+    def __init__(self, inQueue, outQueue , params):
+        super().__init__(inQueue, outQueue, params, tolerance)
+        self.mulstep = params.mulstep
+        self.step = params.step
 
-    def run(self):
-        super().run()
-        while not self.stopped:
-            try:
-                out=outQueue.get(timeout=self.timeout)
-                inQueue.put(out+random.randint(-1*self.mulstep*step if out-self.mulstep*step>=0 else 0, self.mulstep*step*2))
-            except q.Empty:
-                return
 
-inQueue = q.Queue()
-outQueue = q.Queue()
+if __name__=='__main__':
+    inQueue = q.Queue()
+    outQueue = q.Queue()
 
-minimum = 80
-maximum = 100
-step = 10
-substep = 1
-tolerance = 0.05
-BangBangParams = namedtuple('params', ['min', 'max', 'step', 'substep'])
+    minimum = 80
+    maximum = 100
+    step = 10
+    substep = 1
+    tolerance = 0.05
+    mulstep = 5
+    initValue = 50
 
-bang_bang = d.BangBang(inQueue, outQueue, BangBangParams(minimum, maximum, step, substep), tolerance)
-testBench=TestBench(timeout=5, mulstep=5)
+    BangBangParams = namedtuple('params', ['min', 'max', 'step', 'substep'])
+    TestBangBangParams = namedtuple('params', ['mulstep','step'])
 
-testBench.start()
-bang_bang.start()
+    bang_bang = d.BangBang(inQueue, outQueue, BangBangParams(minimum, maximum, step, substep), tolerance)
+    test_bang_bang = BangBangRandomTest(outQueue,inQueue,TestBangBangParams(mulstep,step))
+    bang_bang.name = 'Controller'
+    test_bang_bang.name = 'Tester'
 
-time.sleep(5)
+    inQueue.put(initValue)
 
-testBench.stop()
-bang_bang.stop()
+    test_bang_bang.start()
+    bang_bang.start()
 
-testBench.join()
-bang_bang.join()
+    time.sleep(5)
 
-logging.info('stopped correctly')
+    test_bang_bang.stop()
+    bang_bang.stop()
+
+    test_bang_bang.join()
+    bang_bang.join()
+
+    logging.info('stopped correctly')
