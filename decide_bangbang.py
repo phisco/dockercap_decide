@@ -1,39 +1,41 @@
-from threading import Thread
-import queue as q
-import logging
+from multiprocessing import Process
+import logging, signal, queue
 
 
-class Decide(Thread):
+class Decide(Process):
     def __init__(self, inQueue, outQueue, params, tolerance):
         super(Decide, self).__init__()
         # params will be a namedtuple
         self.params = params
-        self.inQueue = inQueue  # type: q.Queue
-        self.outQueue = outQueue  # type: q.Queue
+        self.inQueue = inQueue
+        self.outQueue = outQueue
         self.__stopped = False
         self.previousChoice = 100
         self.previousStatus = 0
         self.tolerance = tolerance
+        signal.signal(signal.SIGTERM, self.handler)
 
-    def stop(self):
-        self.__stopped=True;
+    def handler(self, signum, frame):
+        if signum == signal.SIGTERM:
+            self.__stopped = True
 
     def decide(self, status):
-        return 0
+        pass
 
     def run(self):
         super().run()
         logging.info("Set params {}".format(self.params))
         while not self.__stopped:
             try:
-                status = self.inQueue.get()
+                status = self.inQueue.get(timeout=1)
                 choice = self.decide(status)
                 self.previousStatus, self.previousChoice = status, choice
 
                 logging.info('Received: {}, decided: {}'.format(status, choice))
 
                 self.outQueue.put(choice)
-            except q.Empty:
+            except queue.Empty:
+                logging.info("queue is empty, will end")
                 break
 
 class BangBang(Decide):
