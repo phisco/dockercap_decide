@@ -3,7 +3,7 @@ import logging, signal, queue
 
 
 class Decide(Process):
-    def __init__(self, inQueue, outQueue, params, tolerance):
+    def __init__(self, inQueue, outQueue, params, tolerance,timeout):
         super(Decide, self).__init__()
         # params will be a namedtuple
         self.params = params
@@ -13,11 +13,13 @@ class Decide(Process):
         self.previousChoice = 100
         self.previousStatus = 0
         self.tolerance = tolerance
+        self.timeout = timeout
         signal.signal(signal.SIGTERM, self.handler)
 
     def handler(self, signum, frame):
         if signum == signal.SIGTERM:
             self.__stopped = True
+            logging.info("received SIGTERM, will leave gracefully")
 
     def decide(self, status):
         pass
@@ -27,7 +29,7 @@ class Decide(Process):
         logging.info("Set params {}".format(self.params))
         while not self.__stopped:
             try:
-                status = self.inQueue.get(timeout=1)
+                status = self.inQueue.get(timeout=self.timeout)
                 choice = self.decide(status)
                 self.previousStatus, self.previousChoice = status, choice
 
@@ -40,8 +42,8 @@ class Decide(Process):
 
 class BangBang(Decide):
 
-    def __init__(self, inQueue, outQueue, params, tolerance):
-        super().__init__(inQueue, outQueue, params, tolerance)
+    def __init__(self, inQueue, outQueue, params, tolerance, timeout):
+        super().__init__(inQueue, outQueue, params, tolerance, timeout)
         self.max = params.max
         self.min = params.min
         self.step = params.step
