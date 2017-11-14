@@ -22,6 +22,9 @@ class BangBangRandomTest(d.Decide):
         self.mulstep = params.mulstep
         self.step = params.step
 
+#Ottimo test e ottimo design del controller. Riusciamo a fare un test con dati presi da qualche dataseta di latenza?
+# tipo da questo sito: https://www.caida.org/data/ 
+# oppure dai benchmark usati da facebook qui: https://code.facebook.com/posts/321654407970003/real-world-web-application-benchmarking/
 
 if __name__=='__main__':
     inQueue = q.Queue()
