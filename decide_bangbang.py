@@ -3,7 +3,7 @@ import logging, signal, queue
 
 
 class Decide(Process):
-    def __init__(self, inQueue, outQueue, params, tolerance,timeout):
+    def __init__(self, inQueue, outQueue, params, tolerance, timeout):
         super(Decide, self).__init__()
         # params will be a namedtuple
         self.params = params
@@ -63,5 +63,3 @@ class BangBang(Decide):
             logging.info('trying to reduce power by step {}'.format(self.step))
             choice = self.previousChoice - self.step
         return choice if 100 >= choice >= self.step else 100 if choice >= 100 else self.step
-
-
