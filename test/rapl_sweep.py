@@ -18,23 +18,6 @@ def test(benchmark, minW, maxW, step):
 
 def run_perf_return_dict(benchmark):
     output = os.popen('perf stat {} 2>&1 1>/dev/null'.format(benchmark)).read()
-    output = """
- Performance counter stats for 'system wide':
-
-        519.241107      cpu-clock (msec)          #   22.627 CPUs utilized
-                30      context-switches          #    0.058 K/sec
-                 0      cpu-migrations            #    0.000 K/sec
-                 3      page-faults               #    0.006 K/sec
-        46,238,533      cycles                    #    0.089 GHz
-        72,334,335      stalled-cycles-frontend   #  156.44% frontend cycles idle
-         6,541,661      instructions              #    0.14  insn per cycle
-                                                  #   11.06  stalled cycles per insn
-         1,520,349      branches                  #    2.928 M/sec
-            67,711      branch-misses             #    4.45% of all branches
-
-       0.022947676 seconds time elapsed
-
-    """
     print output
     output = output.split('\n') #split on \n ['val key # val key'.]
     output = map(lambda x: x.split('#'), output) #split on # : ['value key # value key',] -> [['value key', 'value key'],]
@@ -54,7 +37,6 @@ def run_perf_return_dict(benchmark):
             o[line[0][1]] = {'value': line[0][0], line[1][1]: line[1][0]}
         elif len(line) is 1:
             o[output[old_n][0][1]][line[0][1]] = line[0][0]
-
     print o
     return o
 
