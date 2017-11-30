@@ -4,12 +4,7 @@ from parse import *
 from time import *
 
 
-N=4
-M=4
-O=4
-benchmark='ls'
-
-def test(benchmark,minW,maxW,step):
+def test(benchmark, minW, maxW, step):
     output=[]
     for i in range(minW, maxW, step):
         # set rapl
@@ -23,6 +18,23 @@ def test(benchmark,minW,maxW,step):
 
 def run_perf_return_dict(benchmark):
     output = os.popen('perf stat {} 2>&1 1>/dev/null'.format(benchmark)).read()
+    output = """
+ Performance counter stats for 'system wide':
+
+        519.241107      cpu-clock (msec)          #   22.627 CPUs utilized
+                30      context-switches          #    0.058 K/sec
+                 0      cpu-migrations            #    0.000 K/sec
+                 3      page-faults               #    0.006 K/sec
+        46,238,533      cycles                    #    0.089 GHz
+        72,334,335      stalled-cycles-frontend   #  156.44% frontend cycles idle
+         6,541,661      instructions              #    0.14  insn per cycle
+                                                  #   11.06  stalled cycles per insn
+         1,520,349      branches                  #    2.928 M/sec
+            67,711      branch-misses             #    4.45% of all branches
+
+       0.022947676 seconds time elapsed
+
+    """
     print output
     output = output.split('\n') #split on \n ['val key # val key'.]
     output = map(lambda x: x.split('#'), output) #split on # : ['value key # value key',] -> [['value key', 'value key'],]
@@ -35,20 +47,20 @@ def run_perf_return_dict(benchmark):
     output = filter(lambda x: len(x)>0, output)
     output = [[[values[0], ' '.join(values[1:])] for values in l] for l in output]
     o={}
+    old_n = 0
     for n, line in enumerate(output, start=0):
-        if len(output) > n+1:
-            if len(line) > 1 and len(output[n+1]) > 1:
-                o[line[0][1]] = {'value': line[0][0], line[1][1]: line[1][0]}
-            elif len(output[n+1]) is 1:
-                o[line[0][1]] = {'value': line[0][0], line[1][1]: line[1][0], line[0][1]: output[0][0]}
-        else:
-            o[line[0][1]] = {'value': line[0][0]}
+        if len(line) > 1:
+            old_n = n
+            o[line[0][1]] = {'value': line[0][0], line[1][1]: line[1][0]}
+        elif len(line) is 1:
+            o[output[old_n][0][1]][line[0][1]] = line[0][0]
+
     print o
     return o
 
 
 if __name__ == "__main__":
-    run_perf_return_dict(benchmark)
+    run_perf_return_dict('ls')
 
 
 
