@@ -7,12 +7,11 @@ LOCAL_PATH='/home/users/marco.arnaboldi/hyppo/powercap/_build/utils'
 NUM_PACKAGES=2
 
 def test(benchmark, minW, maxW, step):
-    output=[]
+    output = []
     for i in range(maxW, minW, -step):
-        # set rapl
-	for p in range(NUM_PACKAGES):
-		os.system('{0}/rapl-set --package={1} --constraint=0 --c-power-limit={2}'.format(LOCAL_PATH, p, i*1000000))
-	output.append({'date': time(), 'rapl': i, 'perf': run_perf_return_dict(benchmark)})
+        for p in range(NUM_PACKAGES):
+            os.system('{0}/rapl-set --package={1} --constraint=0 --c-power-limit={2}'.format(LOCAL_PATH, p, i*1000000))
+            output.append({'date': time(), 'rapl': i, 'perf': run_perf_return_dict(benchmark)})
     return output
 
 def run_perf_return_dict(benchmark):
@@ -21,7 +20,9 @@ def run_perf_return_dict(benchmark):
     output = map(lambda x: x.split('#'), output) #split on # : ['value key # value key',] -> [['value key', 'value key'],]
     output = [filter(lambda x: x is not '', el) for el in output] #remove empty elements
     output = filter(lambda x : x != [], output)
-    output = list(output[1:]) #remove header
+    for i, l in enumerate(output):
+        if 'Performance' in l[0]:
+            output = output[i:]
     output = [map(lambda x: x.split(' '), el) for el in output] # split on ' '
     output = [[[i for i in el if i is not ''] for el in line] for line in output]#filter '' away but keep line structure
     output = [[el for el in line if len(el)>0] for line in output]
@@ -40,4 +41,4 @@ def run_perf_return_dict(benchmark):
 
 if __name__ == "__main__":
     #pprint(run_perf_return_dict('ls'))
-	pprint(test('/home/users/marco.arnaboldi/hyppo/stress-ng-0.09.04/stress-ng --cpu 40 --udp 100 --memcpy 100 -t 10',50,200,10))
+    pprint(test('/home/users/marco.arnaboldi/hyppo/stress-ng-0.09.04/stress-ng --cpu 40 --udp 100 --memcpy 100 -t 10',50,200,10))
