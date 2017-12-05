@@ -3,12 +3,16 @@ from parse import *
 from time import *
 from pprint import *
 
+LOCAL_PATH='/home/users/marco.arnaboldi/hyppo/powercap/_build/'
+NUM_PACAKGES=2
 
 def test(benchmark, minW, maxW, step):
     output=[]
     for i in range(minW, maxW, step):
         # set rapl
-        output.append({'date': time(), 'rapl': {}, 'perf': run_perf_return_dict(benchmark)})
+	for p in range(NUM_PACKAGES):
+		os.system('{0}/rapl-set --package={1} --constraint=0 --c-power-limit={2}'.format(LOCAP_PATH, p, i*1000000))
+	output.append({'date': time(), 'rapl': i, 'perf': run_perf_return_dict(benchmark)})
     return output
 
 def run_perf_return_dict(benchmark):
