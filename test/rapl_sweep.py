@@ -37,7 +37,6 @@ def run_perf_return_dict(benchmark):
             old_n = n
             o[line[0][1]] = {'value': line[0][0], line[1][1]: line[1][0]}
         elif len(line) is 1:
-	    print(line)
             o[output[old_n][0][1]][line[0][1]] = line[0][0]
     return o
 
