@@ -22,7 +22,9 @@ def run_perf_return_dict(benchmark):
     output = filter(lambda x : x != [], output)
     for i, l in enumerate(output):
         if 'Performance' in l[0]:
-            output = output[i:]
+            output = output[i+1:]
+            break
+    print(output)
     output = [map(lambda x: x.split(' '), el) for el in output] # split on ' '
     output = [[[i for i in el if i is not ''] for el in line] for line in output]#filter '' away but keep line structure
     output = [[el for el in line if len(el)>0] for line in output]
@@ -35,6 +37,7 @@ def run_perf_return_dict(benchmark):
             old_n = n
             o[line[0][1]] = {'value': line[0][0], line[1][1]: line[1][0]}
         elif len(line) is 1:
+	    print(line)
             o[output[old_n][0][1]][line[0][1]] = line[0][0]
     return o
 
