@@ -3,8 +3,9 @@ from parse import *
 from time import *
 from pprint import *
 
-LOCAL_PATH='/home/users/marco.arnaboldi/hyppo/powercap/_build/utils'
-NUM_PACKAGES=2
+LOCAL_PATH = '/home/users/marco.arnaboldi/hyppo/powercap/_build/utils'
+NUM_PACKAGES = 2
+
 
 def test(benchmark, minW, maxW, step):
     output = []
@@ -13,6 +14,7 @@ def test(benchmark, minW, maxW, step):
             os.system('{0}/rapl-set --package={1} --constraint=0 --c-power-limit={2}'.format(LOCAL_PATH, p, i*1000000))
             output.append({'date': time(), 'rapl': i, 'perf': run_perf_return_dict(benchmark)})
     return output
+
 
 def run_perf_return_dict(benchmark):
     output = os.popen('perf stat {} 2>&1 1>/dev/null'.format(benchmark)).read()
