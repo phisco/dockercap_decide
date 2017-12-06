@@ -33,17 +33,4 @@ def test(minW=50, maxW=200, step=10):
 
 if __name__ == '__main__':
     client = docker.from_env()
-    containers = []
-    containers.append(client.containers.run('rabbitmq:3', detach=True, ports={'5672/tcp': 5672}))
-    rabbit = containers[0]
-    image = client.images.build(path='../slave')
-    for i in range(0, NUM_WORKERS):
-        containers.append(client.containers.run(image, detach=True))
-    while True:
-        if len(filter(lambda container: container.status is not 'ready')) == 0:
-            break
-        else:
-            sleep(5)
     test()
-    for el in containers:
-        el.kill()
