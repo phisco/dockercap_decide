@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO)
 resp_channel = resp_connection.channel()
 def callback(ch, method, properties, body):
     os.popen('/home/users/marco.arnaboldi/hyppo/stress-ng-0.09.04/stress-ng --cpu 40 --udp 100 --memcpy 100 -t 10 2>&1 1>/dev/null')
-    os.logging.info(body)
+    logging.info(body)
     resp_channel.basic_publish(exchange='responses', routing_key='', body=str(time()))
 
 
