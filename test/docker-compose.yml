@@ -1,15 +1,14 @@
-version: "3.3"
+version: "3"
 
 services:
   slave:
     build: ./slave
     image: slave
-    ports:
-      - "5672"
     depends_on:
       - rabbit
-    deploy:
-      replicas: 2
+    restart: always
+    environment:
+      - PYTHONBUFFERED=0
   rabbit:
     image: rabbitmq:3
     ports:
