@@ -2,8 +2,7 @@ version: "3.3"
 
 services:
   slave:
-    build:
-      - ./slave
+    build: ./slave
     image: slave
     ports:
       - "5672"
