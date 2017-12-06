@@ -6,8 +6,8 @@ import logging
 
 LOCAL_PATH = '/home/users/marco.arnaboldi/hyppo/powercap/_build/utils'
 NUM_PACKAGES = 2
-NUM_WORKERS = 2
-TIME = 1
+NUM_WORKERS = 40
+TIME = 10
 logging.basicConfig(level=logging.INFO)
 
 def callback(ch, method, properties, body):

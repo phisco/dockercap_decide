@@ -3,7 +3,11 @@ import logging
 from time import time
 import os
 
-connection = pika.BlockingConnection(pika.ConnectionParameters('rabbit', port=5672))
+while True:
+    try:
+        connection = pika.BlockingConnection(pika.ConnectionParameters('rabbit', port=5672))
+        break
+    except
 channel = connection.channel()
 channel.exchange_declare(exchange='command', exchange_type='fanout')
 channel.exchange_declare(exchange='responses', exchange_type='fanout')
@@ -15,7 +19,7 @@ logging.basicConfig(level=logging.INFO)
 
 resp_channel = resp_connection.channel()
 def callback(ch, method, properties, body):
-    os.popen('/home/users/marco.arnaboldi/hyppo/stress-ng-0.09.04/stress-ng --cpu 40 --udp 100 --memcpy 100 -t 10 2>&1 1>/dev/null')
+    os.popen('stress-ng --cpu 1 --udp 1 --memcpy 1 -t 10 2>&1 1>/dev/null')
     logging.info(body)
     resp_channel.basic_publish(exchange='responses', routing_key='', body=str(time()))
 
