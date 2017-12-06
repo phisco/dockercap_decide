@@ -3,11 +3,7 @@ import logging
 from time import time
 import os
 
-while True:
-    try:
-        connection = pika.BlockingConnection(pika.ConnectionParameters('rabbit', port=5672))
-        break
-    except
+connection = pika.BlockingConnection(pika.ConnectionParameters('rabbit', port=5672))
 channel = connection.channel()
 channel.exchange_declare(exchange='command', exchange_type='fanout')
 channel.exchange_declare(exchange='responses', exchange_type='fanout')
